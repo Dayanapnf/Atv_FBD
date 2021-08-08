@@ -1,0 +1,262 @@
+Uma universidade oferece vários cursos superiores. Para um aluno concluir um curso, deve cumprir todas as
+disciplinas contidas no curso. Para cumprir uma disciplina o aluno precisa obter nota igual ou superior a 7. Toda
+disciplina é ministrada por um único professor. O seguinte Modelo Conceitual representa o cenário dessa escola.
+
+tabelas/inserts:
+
+-- SELECT * FROM DISCIPLINA
+-- SELECT * FROM PROFESSOR
+-- SELECT * FROM CURSO
+-- SELECT * FROM ALUNO
+-- SELECT * FROM AULA
+-- SELECT * FROM DISCIPLINA_CURSO
+
+
+CREATE TABLE IF NOT EXISTS DISCIPLINA (
+numdisp SERIAL not null,
+nome varchar not null,
+quantcreditos int not null,
+CONSTRAINT disciplina_pkey PRIMARY KEY (numdisp)
+);
+
+CREATE TABLE IF NOT EXISTS PROFESSOR(
+numprof int not null,
+nome varchar not null,
+areapesquisa varchar not null,
+CONSTRAINT professor_pkey PRIMARY KEY (numprof)
+);
+
+CREATE TABLE IF NOT EXISTS  CURSO(
+numcurso int not null,
+nome varchar not null,
+totalcreditos float,
+CONSTRAINT curso_pkey PRIMARY KEY (numcurso)
+);
+
+CREATE TABLE IF NOT EXISTS ALUNO(
+numaluno int not null,
+nome varchar not null,
+endereco varchar (100) not null,
+cidade varchar not null,
+telefone varchar not null,
+numcurso int ,
+
+CONSTRAINT aluno_pkey PRIMARY KEY (numaluno),
+CONsTRAINT aluno_fkey FOREIGN KEY (numcurso) REFERENCES CURSO (numcurso)
+);
+
+CREATE TABLE IF NOT EXISTS AULA(
+semestre varchar not null,
+nota float not null,
+numaluno int ,
+numdisp int,
+numprof int,
+CONSTRAINT aula_pkey PRIMARY KEY (semestre),
+CONSTRAINT aula_fkey1 FOREIGN KEY (numaluno) REFERENCES ALUNO (numaluno),
+CONSTRAINT aula_fkey2 FOREIGN KEY (numdisp) REFERENCES DISCIPLINA (numdisp),
+CONSTRAINT aula_fkey3 FOREIGN KEY (numprof) REFERENCES PROFESSOR (numprof)
+);
+
+CREATE TABLE  IF NOT EXISTS DISCIPLINA_CURSO(
+numdisp int ,
+numcurso int,
+CONSTRAINT disciplina_cursofkey1 FOREIGN KEY (numdisp) REFERENCES DISCIPLINA (numdisp),
+CONSTRAINT disciplina_cursofkey2 FOREIGN KEY (numcurso) REFERENCES CURSO (numcurso)
+);
+
+
+INSERT INTO PROFESSOR (numprof,nome,areapesquisa) VALUES
+(3567,'Abgair','Administração'),
+(3568,'Ramon Travanti','Banco de dados'),
+(3569,'Fábio Soares','IOT'),
+(3570,'Marcos Salvador','Matematica'),
+(3571,'Camilo Almendra', 'Engenharia de Software');
+
+INSERT INTO CURSO (numcurso,nome,totalcreditos) VALUES
+(5142,'Engenharia Civil',2650),
+(5143,'Ciencia da Computação',2760),
+(5144,'Sistemas de Informação',2570),
+(5145,'Redes de Computadores',2000),
+(5146,'Engenharia da Computação',2890);
+
+INSERT INTO DISCIPLINA (nome,quantcreditos) VALUES
+('Banco de Dados', 40),
+('Estrutura de Dados',40),
+('Gestão de Processo de Negócios',35),
+('Cálculo Numérico',30),
+('Engenharia de Software',30),
+('Matemática Discreta',27),
+('Arquitetura de Computadores ',25);
+
+INSERT INTO DISCIPLINA_CURSO (numdisp,numcurso) VALUES
+(1,5143),
+(2,5143),
+(3,5144),
+(4,5143),
+(4,5142),
+(5,5145),
+(6,5144),
+(7,5143),
+(7,5144);
+
+INSERT INTO ALUNO (numaluno,nome,endereco,cidade,telefone,numcurso) VALUES
+(1111,'Edvaldo Carlos Silva','Rua Basilio Pinto,263','Quixadá - CE','(88)8152-6433',5143),
+(1112,'Marcos João Casanova','Av Claudio Gueirros Leite,83','Jardim - CE','(88)9687-4522',5142),
+(1113,'Ailton Castro','Rua João Pereira de Sousa,102','Pau Amarelo - SP','(11)8869-3722',5142),
+(1114,'João Matheus Costa','Prça C,99','Mirueira - PE','(81)8576-9051',5145),
+(1115,'Melissa Scarllet','Rua Canilvada, 202','Janga - MA','(98)9750-2755',5144);
+
+INSERT INTO AULA (numaluno,numdisp,numprof,semestre,nota) VALUES
+(1111,1,3567,'01/1998',8.5),
+(1111,2,3567,'01/1998',6.0),
+(1111,2,3567,'02/1998',7.0),
+(1115,3,3568,'01/1998',5.5),
+(1115,3,3568,'02/1998',7.5),
+(1111,4,3570,'01/1998',8.0),
+(1112,4,3570,'01/1998',7.0),
+(1113,5,3569,'01/1998',7.5),
+(1115,6,3568,'01/1998',9.5),
+(1111,7,3571,'01/1998',10.0),
+(1112,7,3571,'01/1998',5.0),
+(1112,7,3571,'02/1998',10.0),
+(1114,1,3567,'01/1998',7.0),
+(1114,2,3567,'01/1998',8.0),
+(1114,4,3570,'01/1998',6.0),
+(1114,4,3570,'02/1998',9.0),
+(1113,4,3570,'01/1998',2.0),
+(1113,4,3570,'02/1998',8.0),
+(1115,7,3571,'01/1998',5.5),
+(1115,7,3571,'02/1998',7.5);
+
+
+
+Apresente o código SQL que atenda as seguintes questões:
+
+5. Quais os nomes das disciplinas do curso de Ciência da Computação.
+
+R = SELECT nome FROM DISCIPLINA WHERE numdisp IN(SELECT numdisp FROM disciplina_curso WHERE numcurso = 5143);
+
+6. Quais os nomes dos cursos que possuem no curriculum a disciplina Cálculo Numérico
+
+R = SELECT nome FROM CURSO WHERE numcurso IN(SELECT numcurso FROM DISCIPLINA_CURSO  WHERE numdisp = 4); 
+
+7. Quais os nomes das disciplinas que o aluno Marcos João Casanova cursou no 1º semestre de 1998.
+
+R = SELECT nome FROM DISCIPLINA WHERE numdisp IN(SELECT numdisp 
+FROM aula WHERE numaluno IN (SELECT numaluno FROM ALUNO WHERE nome = 'Marcos João Casanova'
+AND semestre = '01/1998'));
+
+8. Quais os nomes de disciplinas que o aluno Ailton Castro foi reprovado.
+
+R = SELECT nome FROM DISCIPLINA WHERE numdisp IN (SELECT numdisp FROM AULA WHERE numaluno = 1113  AND nota < 7);
+
+9. Quais os nomes de alunos reprovados na disciplina de Cálculo Numérico no 1º semestre de 1998.
+
+R = SELECT nome FROM ALUNO WHERE numaluno IN(SELECT numaluno FROM AULA WHERE nota < 7.0 AND semestre = '01/1998' AND numdisp = 4);
+
+10. Quais os nomes das disciplinas ministradas pelo prof. Ramon Travanti.
+
+R = SELECT nome FROM DISCIPLINA WHERE numdisp IN (SELECT numdisp FROM AULA WHERE numprof = 3568);
+
+11. Quais os nomes de professores que já ministraram aula de Banco de Dados.
+
+R = SELECT nome FROM PROFESSOR WHERE areapesquisa = 'Banco de dados ';
+
+12. Qual a maior e a menor nota na disciplina de Cálculo Numérico no 1º semestre de 1998.
+
+R = SELECT  MIN(A.nota), MAX(A.nota)  FROM AULA A, DISCIPLINA D WHERE A.numdisp = D.numdisp AND A.semestre = '01/1998' ;
+
+13. Qual o nome do aluno e nota que obteve maior nota na disciplina de Engenharia de Software no 1º semestre de 1998.
+
+R = 
+
+SELECT A.nome , AU.nota FROM (SELECT MAX(AU.nota) 
+FROM ALUNO A , AULA AU, DISCIPLINA D WHERE A.numaluno = AU.numaluno AND D.numdisp = AU.numdisp
+AND D.nome = 'Engenharia de Software' AND AU.semestre = '01/1998')
+AS MAX, AULA AU, DISCIPLINA D, ALUNO A 
+WHERE A.numaluno = AU.numaluno AND D.numdisp = AU.numdisp AND D.nome = 'Engenharia de Software' 
+AND AU.Semestre = '01/1998' AND AU.nota = MAX.max;
+
+14. Quais nomes de alunos, nome de disciplina e nome de professores que cursaram o 1º semestre de 1998 em ordem de aluno.
+
+R = 
+
+SELECT A.nome AS Aluno, D.Nome AS Disciplina, P.nome AS Professor FROM Aluno A, Aula AU, Disciplina D, Professor P
+WHERE AU.numaluno = A.NumAluno AND AU.numprof = P.numprof AND AU.numdisp = D.numdisp AND AU.semestre = '01/1998' ORDER BY A.Nome;
+
+15. Quais nomes de alunos, nome de disciplina e notas do 1º semestre de 1998 no curso de Ciência da Computação.
+
+R = SELECT A.nome AS Aluno, D.nome AS Disciplina, AU.nota FROM Aluno A, Aula AU, Curso C, Disciplina D 
+WHERE AU.numaluno = A.numaluno AND A.numcurso = C.numcurso AND AU.numdisp = D.numdisp  AND AU.semestre = '01/1998' AND C.nome = 'Ciencia da Computação'
+
+16. Qual a média de notas do professor Marcos Salvador.
+
+R = SELECT AVG(NOTA) FROM AULA WHERE numprof IN(SELECT numprof FROM PROFESSOR WHERE nome = 'Marcos Salvador')
+
+17. Quais nomes de alunos, nomes de disciplinas e notas que tiveram nota entre 5.0 e 7.0 em ordem de disciplina.
+
+R = SELECT A.nome, D.nome, B.nota FROM ALUNO A, DISCIPLINA D, AULA B WHERE B.numaluno = A.numaluno AND B.numdisp = D.numdisp 
+AND B.nota > 5.0 AND B.nota < 7.0 ORDER BY D.nome;
+
+18. Qual a média de notas da disciplina Cálculo Numérico no 1º semestre de 1998.
+
+R = SELECT AVG(NOTA) FROM AULA WHERE numdisp IN (SELECT numdisp FROM DISCIPLINA WHERE nome = 'Cálculo Numérico' AND semestre = '01/1998')
+
+19. Quantos alunos o professor Abgair teve no 1º semestre de 1998.
+
+R = SELECT COUNT(NUMPROF) AS Quantidade FROM AULA B WHERE B.NUMPROF = 3567 AND B.SEMESTRE = '01/1998';
+
+20. Qual a média de notas do aluno Edvaldo Carlos Silva.
+
+R = SELECT AVG(NOTA) FROM AULA WHERE numaluno IN (SELECT numaluno FROM ALUNO WHERE nome = 'Edvaldo Carlos Silva')
+
+21. Quais as médias por nome de disciplina de todos os cursos do 1º semestre de 1998 em ordem de disciplina.
+
+R = SELECT AVG(B.nota),D.nome FROM AULA B, DISCIPLINA D WHERE B.numdisp = D.numdisp AND B.semestre = '01/1998' GROUP BY D.nome;
+
+22. Quais as médias das notas por nome de professor no 1º semestre de 1998.
+
+R = SELECT AVG(AU.nota), P.nome FROM Aula AU, Professor P WHERE AU.numprof = P.numprof AND AU.semestre = '01/1998' GROUP BY P.Nome;
+
+23. Qual a média por disciplina no 1º semestre de 1998 do curso de Ciência da Computação
+R = SELECT D.nome, AVG(B.nota) FROM AULA B, DISCIPLINA D, CURSO C, DISCIPLINA_CURSO E 
+WHERE B.numdisp = E.numdisp AND C.numcurso = E.numcurso AND E.numdisp = D.numdisp AND B.semestre = '01/1998' AND C.numcurso = 5143 GROUP BY D.nome;
+
+24. Qual foi a quantidade de créditos concluídos (somente as disciplinas aprovadas) do aluno Edvaldo Carlos Silva.
+
+R= SELECT SUM(D.quantcreditos) FROM Aluno A, Aula AU, Disciplina D WHERE AU.nota >= 7.0 
+AND A.nome = 'Edvaldo Carlos Silva' AND AU.numaluno = A.numaluno AND D.numdisp = AU.numdisp;
+
+25. Quais nomes de alunos e quantidade de créditos que já completaram 70 créditos (somente os aprovados na disciplina).
+
+R = SELECT A.nome, SUM(D.quantcreditos) AS Resultado FROM ALUNO A, DISCIPLINA D, AULA B WHERE B.nota >= 7.0 
+AND B.numaluno = A.numaluno AND D.numdisp = B.numdisp GROUP BY A.nome HAVING SUM(D.quantcreditos)  >=  70;
+
+26. Quais nomes de alunos, nome de disciplina e nome de professores que cursaram o 1º semestre de 1998 e pertencem ao
+curso de ciência da Computação que possuem nota superior à 8.0.
+
+R = SELECT A.nome , D.nome , P.nome  FROM Aluno A, Aula AU, Curso C, Professor P, Disciplina D
+WHERE AU.numaluno = A.numaluno AND AU.semestre = '01/1998' AND A.numcurso = C.numcurso AND AU.nota > 8.0 
+AND P.numprof = AU.numprof AND AU.numdisp = D.numdisp;
+
+27. Qual a disciplina com nota mais baixa em qualquer época
+
+R = SELECT D.nome, MIN(AU.nota)  FROM Aula AU, Disciplina D  WHERE AU.numdisp = D.numdisp GROUP BY D.nome
+HAVING MIN(AU.nota) = (SELECT MIN(MIN_nota)  FROM (SELECT D.nome, MIN(AU.nota) AS MIN_nota FROM AULA AU, 
+DISCIPLINA D WHERE AU.numdisp = D.numdisp GROUP BY D.nome) AS Min_nota );
+
+28. Qual a disciplina com média de nota mais alta em qualquer época
+
+R = SELECT D.nome, AVG(AU.nota) FROM Aula AU, Disciplina D WHERE AU.numdisp = D.numdisp GROUP BY D.nome 
+HAVING AVG(AU.nota) = (SELECT MAX(avg_nota)  FROM (SELECT D.nome, AVG(AU.nota) AS avg_nota FROM AULA AU, 
+DISCIPLINA D WHERE AU.numdisp = D.numdisp GROUP BY D.nome) AS maxnota );
+
+29. Quais alunos já concluíram o curso de Ciência da Computação? 
+R =
+
+30. Ordene as disciplinas por quantidade de reprovações.
+
+R = SELECT D.nome, COUNT(nota) AS Qtd_Reprovação FROM AULA A, DISCIPLINA D WHERE A.numdisp = D.numdisp 
+AND A.nota < 7.0 GROUP BY D.nome ORDER BY Qtd_Reprovação DESC
+
+
